@@ -1,0 +1,32 @@
+{
+  "name": "obsidian-confluence-export",
+  "version": "1.0.0",
+  "description": "Export Obsidian markdown notes to Confluence pages via the REST API using a personal API token.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "confluence",
+    "export"
+  ],
+  "author": "louismmrcarnec",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^16.11.6",
+    "builtin-modules": "3.3.0",
+    "esbuild": "0.19.11",
+    "obsidian": "latest",
+    "tslib": "2.4.0",
+    "typescript": "4.7.4",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "marked": "^11.1.1"
+  }
+}
