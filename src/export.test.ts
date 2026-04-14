@@ -26,7 +26,7 @@ function makeApp(opts: {
   const { readContent = "", readBinaryMap = {}, resolveMap = {} } = opts;
   return {
     vault: {
-      read: vi.fn().mockResolvedValue(readContent),
+      cachedRead: vi.fn().mockResolvedValue(readContent),
       readBinary: vi.fn((f: TFile) =>
         Promise.resolve(readBinaryMap[f.name]?.buffer ?? new ArrayBuffer(0)),
       ),

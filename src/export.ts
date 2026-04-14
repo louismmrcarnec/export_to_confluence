@@ -49,8 +49,8 @@ export async function exportNote(params: ExportNoteParams): Promise<ExportNoteRe
   }
 
   // 1. Read + strip frontmatter
-  const vault = app.vault as { read: (f: TFile) => Promise<string>; readBinary: (f: TFile) => Promise<ArrayBuffer> };
-  const raw = await vault.read(file);
+  const vault = app.vault as { cachedRead: (f: TFile) => Promise<string>; readBinary: (f: TFile) => Promise<ArrayBuffer> };
+  const raw = await vault.cachedRead(file);
   const body = stripFrontmatter(raw);
 
   // 2. Collect + resolve vault image refs

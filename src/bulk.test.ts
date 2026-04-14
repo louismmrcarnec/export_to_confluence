@@ -40,7 +40,7 @@ function makeClient(overrides: Record<string, unknown> = {}): ConfluenceClient {
 function makeApp(readContent = "Body.") {
   return {
     vault: {
-      read: vi.fn().mockResolvedValue(readContent),
+      cachedRead: vi.fn().mockResolvedValue(readContent),
       readBinary: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
     },
     metadataCache: {
@@ -53,7 +53,7 @@ function makeApp(readContent = "Body.") {
 function makeAppWithFm(readContent: string, fm: Record<string, unknown>) {
   return {
     vault: {
-      read: vi.fn().mockResolvedValue(readContent),
+      cachedRead: vi.fn().mockResolvedValue(readContent),
       readBinary: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
     },
     metadataCache: {

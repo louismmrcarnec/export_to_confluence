@@ -176,8 +176,13 @@ export default class ConfluenceExportPlugin extends Plugin {
 
     await this.writePageIdToFrontmatter(file, pageId);
 
-    for (const w of warnings) console.warn("[Confluence Export]", w);
-    new Notice(`Confluence export succeeded (page ${pageId}).`);
+    if (warnings.length > 0) {
+      new Notice(
+        `Confluence export succeeded (page ${pageId}) with ${warnings.length} warning(s).`,
+      );
+    } else {
+      new Notice(`Confluence export succeeded (page ${pageId}).`);
+    }
   }
 
   // ---- folder export -------------------------------------------------------
@@ -233,40 +238,10 @@ export default class ConfluenceExportPlugin extends Plugin {
   }
 
   private async writePageIdToFrontmatter(file: TFile, pageId: string): Promise<void> {
-    const fileManager = this.app.fileManager as unknown as {
-      processFrontMatter?: (
-        file: TFile,
-        fn: (fm: Record<string, unknown>) => void,
-      ) => Promise<void>;
-    };
-
-    if (fileManager?.processFrontMatter) {
-      await fileManager.processFrontMatter(file, (fm) => {
-        fm[FM_PAGE_ID] = String(pageId);
-      });
-      return;
-    }
-
-    // Fallback for older Obsidian versions without processFrontMatter.
-    const content = await this.app.vault.read(file);
-    await this.app.vault.modify(file, upsertFrontmatterField(content, FM_PAGE_ID, pageId));
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      fm[FM_PAGE_ID] = String(pageId);
+    });
   }
-}
-
-// ---- module-level helpers --------------------------------------------------
-
-function upsertFrontmatterField(content: string, key: string, value: string): string {
-  if (content.startsWith("---")) {
-    const end = content.indexOf("\n---", 3);
-    if (end !== -1) {
-      const block = content.slice(4, end);
-      const rest = content.slice(end + 4);
-      const lines = block.split("\n").filter((l) => !new RegExp(`^${key}:`).test(l));
-      lines.push(`${key}: "${value}"`);
-      return `---\n${lines.join("\n")}\n---${rest}`;
-    }
-  }
-  return `---\n${key}: "${value}"\n---\n${content}`;
 }
 
 // ---- settings tab ----------------------------------------------------------
@@ -282,8 +257,6 @@ class ConfluenceExportSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-
-    containerEl.createEl("h2", { text: "Confluence Export" });
 
     new Setting(containerEl)
       .setName("Base URL")
@@ -393,7 +366,7 @@ class ConfluenceExportSettingTab extends PluginSettingTab {
           }),
       );
 
-    containerEl.createEl("h3", { text: "Per-note frontmatter overrides" });
+    new Setting(containerEl).setName("Per-note frontmatter overrides").setHeading();
     const list = containerEl.createEl("ul");
     list.createEl("li", {
       text: "confluence_page_id — auto-written after the first export; reused for updates.",
