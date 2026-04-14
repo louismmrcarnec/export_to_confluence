@@ -3,7 +3,7 @@
   "name": "Confluence export",
   "version": "1.0.0",
   "minAppVersion": "1.4.0",
-  "description": "Export the current Obsidian markdown note to a Confluence page using the Confluence REST API and a personal API token.",
+  "description": "Export the current markdown note to a Confluence page using the Confluence REST API and a personal API token.",
   "author": "louismmrcarnec",
   "authorUrl": "https://github.com/louismmrcarnec",
   "isDesktopOnly": false
