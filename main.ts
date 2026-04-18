@@ -368,21 +368,18 @@ class ConfluenceExportSettingTab extends PluginSettingTab {
 
     new Setting(containerEl).setName("Per-note frontmatter overrides").setHeading();
     const list = containerEl.createEl("ul");
-    list.createEl("li", {
-      text: "confluence_page_id — auto-written after the first export; reused for updates.",
-    });
-    list.createEl("li", { text: "confluence_space_key — override the default space." });
-    list.createEl("li", {
-      text: "confluence_parent_id — override the default parent page.",
-    });
-    list.createEl("li", {
-      text: "confluence_title — override the page title (defaults to the note name).",
-    });
-    list.createEl("li", {
-      text: "confluence_image_width — override the image width in pixels (defaults to the plugin setting).",
-    });
-    list.createEl("li", {
-      text: "confluence_overwrite — set to true to overwrite an existing page by title, even if the global toggle is off.",
-    });
+    const fmEntries: [string, string][] = [
+      ["confluence_page_id", "Auto-written after the first export; reused for updates."],
+      ["confluence_space_key", "Override the default space."],
+      ["confluence_parent_id", "Override the default parent page."],
+      ["confluence_title", "Override the page title (defaults to the note name)."],
+      ["confluence_image_width", "Override the image width in pixels (defaults to the plugin setting)."],
+      ["confluence_overwrite", "Set to true to overwrite an existing page by title, even if the global toggle is off."],
+    ];
+    for (const [key, desc] of fmEntries) {
+      const li = list.createEl("li");
+      li.createEl("code", { text: key });
+      li.appendText(` — ${desc}`);
+    }
   }
 }

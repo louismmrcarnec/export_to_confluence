@@ -1,7 +1,5 @@
 import { requestUrl, RequestUrlResponse } from "obsidian";
 import { buildMultipartFileBody } from "./multipart";
-import * as https from "https";
-import { URL } from "url";
 
 export class PageMissingError extends Error {
   constructor(pageId: string) {
@@ -21,7 +19,7 @@ export class PageExistsError extends Error {
 // Exposed so tests can swap it without having to spy on built-ins.
 export type AttachmentUploadFn = (
   url: string,
-  body: Buffer,
+  body: ArrayBuffer,
   headers: Record<string, string>,
 ) => Promise<void>;
 
@@ -59,7 +57,7 @@ export class ConfluenceClient {
   constructor(config: ClientConfig) {
     this.baseUrl = config.baseUrl;
     this.authHeader = config.authHeader;
-    this.attachmentUpload = config.attachmentUpload ?? httpsPost;
+    this.attachmentUpload = config.attachmentUpload ?? obsidianPost;
   }
 
   async createPage(params: CreatePageParams): Promise<string> {
@@ -117,7 +115,8 @@ export class ConfluenceClient {
     const resp = await this.request("GET", `/content/${encodeURIComponent(pageId)}`);
     if (resp.status === 404) throw new PageMissingError(pageId);
     assertOk(resp, "get page title");
-    return String((resp.json as Record<string, unknown>).title ?? "");
+    const title = (resp.json as Record<string, unknown>).title;
+    return typeof title === "string" ? title : "";
   }
 
   async getPageByTitle(spaceKey: string, title: string): Promise<string | null> {
@@ -151,7 +150,7 @@ export class ConfluenceClient {
     const { body, boundary } = buildMultipartFileBody(filename, bytes, contentType);
     const url = `${this.baseUrl}/content/${encodeURIComponent(pageId)}/child/attachment`;
 
-    await this.attachmentUpload(url, Buffer.from(body), {
+    await this.attachmentUpload(url, body, {
       Authorization: this.authHeader,
       "X-Atlassian-Token": "nocheck",
       "Content-Type": `multipart/form-data; boundary=${boundary}`,
@@ -186,42 +185,15 @@ function assertOk(resp: RequestUrlResponse, action: string): void {
   }
 }
 
-/**
- * Minimal HTTPS POST using Node.js net stack. Bypasses both CORS (unlike fetch)
- * and requestUrl's multipart header handling quirks.
- */
-function httpsPost(
-  rawUrl: string,
-  body: Buffer,
+async function obsidianPost(
+  url: string,
+  body: ArrayBuffer,
   headers: Record<string, string>,
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const parsed = new URL(rawUrl);
-    const req = https.request(
-      {
-        hostname: parsed.hostname,
-        path: parsed.pathname + parsed.search,
-        method: "POST",
-        headers: { ...headers, "Content-Length": body.byteLength },
-      },
-      (res) => {
-        const chunks: Buffer[] = [];
-        res.on("data", (chunk: Buffer) => chunks.push(chunk));
-        res.on("end", () => {
-          const status = res.statusCode ?? 0;
-          if (status < 200 || status >= 300) {
-            const text = Buffer.concat(chunks).toString("utf8");
-            reject(
-              new Error(`Confluence upload attachment failed: HTTP ${status} ${text}`.trim()),
-            );
-          } else {
-            resolve();
-          }
-        });
-      },
+  const resp = await requestUrl({ url, method: "POST", headers, body, throw: false });
+  if (resp.status < 200 || resp.status >= 300) {
+    throw new Error(
+      `Confluence upload attachment failed: HTTP ${resp.status} ${resp.text ?? ""}`.trim(),
     );
-    req.on("error", reject);
-    req.write(body);
-    req.end();
-  });
+  }
 }
