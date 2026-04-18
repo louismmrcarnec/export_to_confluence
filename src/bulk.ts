@@ -15,7 +15,7 @@ export function buildFolderTree(folder: TFolder): FolderTree {
   const notes: TFile[] = [];
   const subfolders: FolderTree[] = [];
 
-  for (const child of folder.children as TAbstractFile[]) {
+  for (const child of folder.children) {
     if (isFolder(child)) {
       subfolders.push(buildFolderTree(child));
     } else if (isMarkdownFile(child)) {
@@ -128,7 +128,7 @@ async function exportNoteInFolder(
   const mc = ctx.app.metadataCache as unknown as {
     getFileCache: (f: TFile) => { frontmatter?: Record<string, unknown> } | null;
   };
-  const fm = (mc.getFileCache(note)?.frontmatter ?? {}) as Record<string, unknown>;
+  const fm = mc.getFileCache(note)?.frontmatter ?? {};
   const noteOverwrite = booleanOr(fm["confluence_overwrite"], false);
   const imageWidth = numberOr(fm["confluence_image_width"], ctx.imageWidth);
 

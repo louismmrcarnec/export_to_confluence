@@ -55,7 +55,7 @@ export default class ConfluenceExportPlugin extends Plugin {
 
     this.addCommand({
       id: "export-current-note-to-confluence",
-      name: "Export current note to Confluence",
+      name: "Export current note",
       checkCallback: (checking) => {
         const file = this.app.workspace.getActiveFile();
         if (!file || file.extension !== "md") return false;
@@ -66,7 +66,7 @@ export default class ConfluenceExportPlugin extends Plugin {
 
     this.addCommand({
       id: "export-folder-to-confluence",
-      name: "Export folder to Confluence",
+      name: "Export folder",
       checkCallback: (checking) => {
         const file = this.app.workspace.getActiveFile();
         const folder = file?.parent;
@@ -76,10 +76,10 @@ export default class ConfluenceExportPlugin extends Plugin {
       },
     });
 
-    this.addRibbonIcon("cloud", "Export current note to Confluence", () => {
+    this.addRibbonIcon("cloud", "Export current note", () => {
       const file = this.app.workspace.getActiveFile();
       if (!file || file.extension !== "md") {
-        new Notice("No active markdown note to export.");
+        new Notice("No active Markdown note to export.");
         return;
       }
       this.runNoteExport(file);
@@ -93,7 +93,7 @@ export default class ConfluenceExportPlugin extends Plugin {
         if (!(abstractFile instanceof TFolder)) return;
         menu.addItem((item) => {
           item
-            .setTitle("Export folder to Confluence")
+            .setTitle("Export folder")
             .setIcon("cloud")
             .onClick(() => this.runFolderExport(abstractFile));
         });
@@ -276,7 +276,7 @@ class ConfluenceExportSettingTab extends PluginSettingTab {
       .setDesc("Atlassian account email used for API authentication.")
       .addText((text) =>
         text
-          .setPlaceholder("you@example.com")
+          .setPlaceholder("user@example.com")
           .setValue(this.plugin.settings.username)
           .onChange(async (value) => {
             this.plugin.settings.username = value.trim();
