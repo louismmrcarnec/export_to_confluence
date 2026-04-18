@@ -248,7 +248,7 @@ describe("ConfluenceClient.uploadAttachment", () => {
     expect(url).toContain("/content/42/child/attachment");
     expect(headers["X-Atlassian-Token"]).toBe("nocheck");
     expect(headers["Content-Type"]).toMatch(/^multipart\/form-data;\s*boundary=/);
-    expect(body).toBeInstanceOf(Buffer);
+    expect(body).toBeInstanceOf(ArrayBuffer);
   });
 
   it("propagates errors from the upload transport", async () => {

@@ -1,4 +1,5 @@
-import type { App, TFile, TFolder, TAbstractFile } from "obsidian";
+import { TFile, TFolder } from "obsidian";
+import type { App, TAbstractFile } from "obsidian";
 import { ConfluenceClient, PageExistsError } from "./confluence";
 import { exportNote } from "./export";
 import { booleanOr, numberOr } from "./helpers";
@@ -16,9 +17,9 @@ export function buildFolderTree(folder: TFolder): FolderTree {
 
   for (const child of folder.children as TAbstractFile[]) {
     if (isFolder(child)) {
-      subfolders.push(buildFolderTree(child as TFolder));
+      subfolders.push(buildFolderTree(child));
     } else if (isMarkdownFile(child)) {
-      notes.push(child as TFile);
+      notes.push(child);
     }
   }
 
@@ -157,12 +158,12 @@ async function exportNoteInFolder(
 
 // ---- helpers ---------------------------------------------------------
 
-function isFolder(f: TAbstractFile): boolean {
-  return Array.isArray((f as TFolder).children);
+function isFolder(f: TAbstractFile): f is TFolder {
+  return f instanceof TFolder;
 }
 
-function isMarkdownFile(f: TAbstractFile): boolean {
-  return (f as TFile).extension === "md";
+function isMarkdownFile(f: TAbstractFile): f is TFile {
+  return f instanceof TFile && f.extension === "md";
 }
 
 function hasExistingPageId(_note: TFile): boolean {

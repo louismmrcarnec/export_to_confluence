@@ -1,4 +1,3 @@
-import { createHash } from "crypto";
 import type { TFile, App } from "obsidian";
 
 const IMAGE_EXT_RE = /\.(png|jpe?g|gif|svg|webp|bmp|avif)$/i;
@@ -88,7 +87,7 @@ export function collectBase64ImageRefs(html: string): Base64ImageRef[] {
 
     if (bytes.byteLength < 1024) continue;
 
-    const hash = createHash("md5").update(bytes).digest("hex").slice(0, 12);
+    const hash = hashBytes(bytes);
     if (seen.has(hash)) continue;
     seen.add(hash);
 
@@ -192,6 +191,20 @@ function escapeXml(s: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
+}
+
+function hashBytes(bytes: Uint8Array): string {
+  // Two-pass FNV-1a 32-bit for a 12-char hex dedup key (no crypto import needed).
+  let h1 = 0x811c9dc5;
+  let h2 = 0xc4635c28;
+  for (const b of bytes) {
+    h1 = Math.imul(h1 ^ b, 0x01000193) >>> 0;
+    h2 = Math.imul(h2 ^ b, 0x01000193) >>> 0;
+  }
+  return (
+    h1.toString(16).padStart(8, "0").slice(0, 6) +
+    h2.toString(16).padStart(8, "0").slice(0, 6)
+  );
 }
 
 function decodeBase64(payload: string): Uint8Array {
