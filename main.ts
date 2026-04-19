@@ -276,7 +276,7 @@ class ConfluenceExportSettingTab extends PluginSettingTab {
       .setDesc("Atlassian account email used for API authentication.")
       .addText((text) =>
         text
-          .setPlaceholder("user@example.com")
+          .setPlaceholder("Email address")
           .setValue(this.plugin.settings.username)
           .onChange(async (value) => {
             this.plugin.settings.username = value.trim();
